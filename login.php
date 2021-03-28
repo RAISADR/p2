@@ -1,8 +1,3 @@
-<?php
-   session_id("mainID");
-   session_start();
-?>
-
 <html>
    
    <head>
@@ -12,51 +7,33 @@
 	
    <body>
 
-    <?php
-            $conn=mysqli_connect("localhost", "root", "") or 
-                  die(mysqli_error($myConnection));
-                  mysqli_select_db($conn, "rotodb");
-
-
-            $sql_read = "SELECT * FROM administrator";
-            $result = mysqli_query($conn, $sql_read);
-            if(! $result )
-            {
-              die("Nu se pot citi date din tabelul 'administrator' : " . mysqli_error());
-            }
-            while($row = $result->fetch_assoc()){
-                $user = $row['username'];
-                $pass = $row['password'];
-                echo "Username :".$user;
-                echo "<br>";
-                echo "Parola: ".$pass;
-                echo "<br>";
-            }  
-
-            $msg = '';
-    ?>
-
 <div class="login-box">
   <h2>Bine ai venit !</h2>      
          <?php 
-            if (isset($_POST['login']) && !empty($_POST['username']) 
-                   && !empty($_POST['password'])) {         
-                   if ($_POST['username'] == $user && 
-                      $_POST['password'] == $pass) {
-                      $_SESSION['valid'] = true;
-                      $_SESSION['timeout'] = time();
-                      $_SESSION['username'] = 'user';
-                        echo "Username :".$user;
-                        echo "<br>";
-                        echo "Parola: ".$pass;
-                        echo "<br>";
-                    
-//                      header('Location: https://www.google.ro/');
-                   }else {
-                      echo "<div class='warning-msg'>".'Nume sau parola gresita'."</div>";
-                   }
-                }
-        ?>
+    session_start();
+    $conn=mysqli_connect("localhost", "root", "","rotodb") or die(mysqli_error($myConnection));
+//    mysqli_select_db($conn, "rotodb");
+    
+    if ($stmt = $conn->prepare('SELECT username, password FROM administrator WHERE username = ?')) {
+	   $stmt->bind_param('s', $_POST['username']);
+	   $stmt->execute();
+	   $stmt->store_result();
+        if ($stmt->num_rows > 0) {
+	       $stmt->bind_result($id, $password);
+	       $stmt->fetch();
+	       if (password_verify($_POST['password'], $password)) {
+		      session_regenerate_id();
+              echo "Date corecte";
+	       } else {
+                  echo 'Nume si parola gresite';
+	       }
+        } else {
+	       echo 'GRESIT!';
+        }
+	   $stmt->close(); 
+    }
+    
+         ?>
          <form  method = "post">
             <div class="user-box"> 
                 <input type ="text" name ="username" placeholder="Nume utilizator" required>
