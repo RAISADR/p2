@@ -9,31 +9,30 @@
 
 <div class="login-box">
   <h2>Bine ai venit !</h2>      
-         <?php 
+    <?php 
     session_start();
     $conn=mysqli_connect("localhost", "root", "","rotodb") or die(mysqli_error($myConnection));
-//    mysqli_select_db($conn, "rotodb");
     
-    if ($stmt = $conn->prepare('SELECT username, password FROM administrator WHERE username = ?')) {
-	   $stmt->bind_param('s', $_POST['username']);
-	   $stmt->execute();
-	   $stmt->store_result();
-        if ($stmt->num_rows > 0) {
-	       $stmt->bind_result($id, $password);
-	       $stmt->fetch();
-	       if (password_verify($_POST['password'], $password)) {
-		      session_regenerate_id();
-              echo "Date corecte";
-	       } else {
-                  echo 'Nume si parola gresite';
-	       }
-        } else {
-	       echo 'GRESIT!';
-        }
-	   $stmt->close(); 
+    if (isset($_POST['login']) && !empty($_POST['username']) && !empty($_POST['password'])){
+        $username = $_POST['username'];  
+        $password = $_POST['password'];
+        
+        $username = mysqli_real_escape_string($conn, $username);  
+        $password = mysqli_real_escape_string($conn, $password); 
+     
+        $sql = "select * from administrator where username = '$username' and password = '$password'";
+        $result = mysqli_query($conn, $sql);  
+        $row = mysqli_fetch_array($result, MYSQLI_ASSOC);  
+        $count = mysqli_num_rows($result);
+        
+        if($count == 1){  
+            echo "BUN";  
+        }  
+        else{  
+            echo "GRESIT";  
+        } 
     }
-    
-         ?>
+    ?>
          <form  method = "post">
             <div class="user-box"> 
                 <input type ="text" name ="username" placeholder="Nume utilizator" required>
